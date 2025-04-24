@@ -62,7 +62,7 @@ Returns:
 This version is designed for GitHub Pages.
 You can view a live version here:
 
-👉 `https://<your-username>.github.io/fluxi-ai/`
+👉 `https://chkrvrtnai.github.io/fluxi-ai/`
 
 Or open `index.html` locally in any modern browser.
 
