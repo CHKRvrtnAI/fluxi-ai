@@ -1,45 +1,75 @@
-# Fluxi
+# Fluxi Flow Designer (Demo)
 
-**Fluxi** is your smart assistant for designing and improving business processes — made for small businesses, teams, and consultants who want clarity without complexity.
+This is a minimal AI-assisted **flowchart editor**, designed to help teams model and discuss business processes quickly and visually.
 
----
-
-## Why Fluxi?
-
-Most process tools are built for large corporations, complex systems, or technical users.
-
-**Fluxi is different.**  
-It helps anyone – even without a tech background – to **visually map** their workflows and get **instant feedback** from an AI that thinks like a process expert.
-
-You don’t need to install anything.  
-You don’t need to know BPMN.  
-You just describe or draw your process, and Fluxi helps you **spot inefficiencies, missing steps, and ways to improve**.
+👉 Built entirely with **HTML + JS**, no frameworks, no build tools.
+👉 Deployed instantly via **GitHub Pages**.
 
 ---
 
-## What Fluxi will do
+## ✨ Features
 
-- ✏️ Drag & drop interface to map your business processes
-- 🤖 Real-time suggestions from an AI trained to think like a consultant
-- 📄 Instant improvement plans in plain language
-- 📤 Exportable reports and ready-to-use automation insights
-
----
-
-## Who is Fluxi for?
-
-- Small business owners who want to fix what’s slowing them down  
-- Consultants who want to start from the *real* process, not from slides  
-- Project managers, operations leads, and startup teams  
-- Anyone who wants a smarter way to understand their work
+- **Drag & drop** process blocks (OTC, FI, SCM, MM, HR)
+- **Snap-to-grid** positioning
+- **Connect nodes** with live SVG lines
+- Inline editing of step labels
+- Toggle **step type**: `[manual]` or `[auto]`
+- Export/Import flow as JSON
+- Analyze your flow with **Mistral** (if connected)
 
 ---
 
-## Status
+## 🚀 How to Use
 
-This repo is the official starting point of the **Fluxi project**, created and published on 24/04/2025.
+1. Open [`index.html`](index.html) locally or on GitHub Pages.
+2. Drag process blocks from the top bar into the canvas.
+3. Click **"Connect Nodes"**, then two blocks to create a connection.
+4. Double-click the step name to edit it.
+5. Click `[manual]` or `[auto]` to toggle step type.
+6. Use "Export JSON" to save your flow.
+7. Use "Import JSON" to reload a saved flow.
 
-More updates coming soon.  
-We’re building this in public. If you want to be part of it — [connect with us](#) or follow the journey.
+---
+
+## 📦 Tech Stack
+
+- No frameworks
+- Vanilla HTML + JavaScript
+- SVG for rendering connections
+- GitHub Pages for deployment
+
+---
+
+## 📡 Optional: AI Integration
+
+To use "Analyze with Mistral", you must have a local API compatible with:
+
+```
+POST http://localhost:7860/api/predict
+{
+  "data": ["string prompt"]
+}
+```
+
+Returns:
+```json
+{ "data": ["AI feedback"] }
+```
+
+---
+
+## 🧪 Try the Demo
+This version is designed for GitHub Pages.
+You can view a live version here:
+
+👉 `https://<your-username>.github.io/fluxi-ai/`
+
+Or open `index.html` locally in any modern browser.
+
+---
+
+## 👀 License
+
+MIT License — Use, modify, or fork as you like!
 
 ---
