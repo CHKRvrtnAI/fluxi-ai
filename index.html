@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flowchart AI Mapper</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; }
+    #toolbar {
+      padding: 1rem;
+      background: #f0f0f0;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    #canvas {
+      width: 100vw;
+      height: calc(100vh - 120px);
+      position: relative;
+      background: #fff;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    .node {
+      position: absolute;
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      cursor: move;
+      color: #fff;
+      font-weight: bold;
+      z-index: 10;
+    }
+    .node[data-process="OTC"] { background: #d9534f; }
+    .node[data-process="FI"] { background: #5cb85c; }
+    .node[data-process="SCM"] { background: #f0ad4e; }
+    .node[data-process="MM"] { background: #5bc0de; }
+    .node[data-process="HR"] { background: #9370DB; }
+
+    .node .content {
+      outline: none;
+    }
+
+    .mode-toggle {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: normal;
+      color: white;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+
+    svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+    #result {
+      padding: 1rem;
+      font-family: monospace;
+      background: #f9f9f9;
+      border-top: 1px solid #ccc;
+      height: 100px;
+      overflow: auto;
+    }
+    button, label.toolbar-button {
+      padding: 0.5rem 1rem;
+      background-color: #f0f0f0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover, label.toolbar-button:hover {
+      background-color: #e0e0e0;
+    }
+    #node-picker {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .node-template {
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      color: #fff;
+      font-weight: bold;
+      cursor: grab;
+      user-select: none;
+    }
+    .node-template[data-process="OTC"] { background: #d9534f; }
+    .node-template[data-process="FI"] { background: #5cb85c; }
+    .node-template[data-process="SCM"] { background: #f0ad4e; }
+    .node-template[data-process="MM"] { background: #5bc0de; }
+    .node-template[data-process="HR"] { background: #9370DB; }
+  </style>
+</head>
+<body>
+  <div id="toolbar">
+    <div id="node-picker">
+      <div class="node-template" draggable="true" data-process="OTC">OTC</div>
+      <div class="node-template" draggable="true" data-process="FI">FI</div>
+      <div class="node-template" draggable="true" data-process="SCM">SCM</div>
+      <div class="node-template" draggable="true" data-process="MM">MM</div>
+      <div class="node-template" draggable="true" data-process="HR">HR</div>
+    </div>
+    <button onclick="toggleConnectMode(this)">Connect Nodes</button>
+    <button onclick="analyze()">Analyze with Mistral</button>
+    <button onclick="exportJSON()">Export JSON</button>
+    <label for="importFile" class="toolbar-button">Import JSON</label>
+    <input type="file" id="importFile" accept="application/json" onchange="importJSON(event)" style="display: none;">
+  </div>
+  <div id="canvas" ondragover="event.preventDefault()" ondrop="dropNode(event)">
+    <svg id="connections" style="position:absolute;top:0;left:0;pointer-events:none;z-index:5;" width="100%" height="100%"></svg>
+  </div>
+  <div id="result">AI Feedback: ...</div>
+
+  <script>
+    let nodeId = 0;
+    const canvas = document.getElementById('canvas');
+    const svg = document.getElementById('connections');
+    let connections = [];
+    let connectMode = false;
+    let selectedNode = null;
+
+    function dropNode(event) {
+      event.preventDefault();
+      const processType = event.dataTransfer.getData("text/plain");
+      const x = event.clientX;
+      const y = event.clientY - canvas.getBoundingClientRect().top;
+      createNode({ process: processType, x, y });
+    }
+
+    document.querySelectorAll('.node-template').forEach(template => {
+      template.addEventListener('dragstart', e => {
+        e.dataTransfer.setData("text/plain", template.getAttribute("data-process"));
+      });
+    });
+
+    function createNode({ process = "OTC", x = 100, y = 100, text = "New step", id = null, mode = "manual" }) {
+      const div = document.createElement('div');
+      div.className = 'node';
+      div.setAttribute('data-id', id !== null ? id : nodeId);
+      div.setAttribute('data-process', process);
+      div.setAttribute('data-mode', mode);
+      div.style.left = `${x}px`;
+      div.style.top = `${y}px`;
+
+      const content = document.createElement('div');
+      content.className = 'content';
+      content.contentEditable = true;
+      content.innerText = text;
+      div.appendChild(content);
+
+      const modeToggle = document.createElement('div');
+      modeToggle.className = 'mode-toggle';
+      modeToggle.innerText = `[${mode}]`;
+      modeToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const current = div.getAttribute('data-mode');
+        const newMode = current === 'manual' ? 'auto' : 'manual';
+        div.setAttribute('data-mode', newMode);
+        modeToggle.innerText = `[${newMode}]`;
+      });
+      div.appendChild(modeToggle);
+
+      div.addEventListener('click', (e) => {
+        if (connectMode && !e.target.isContentEditable) {
+          e.stopPropagation();
+          handleConnectClick(div);
+        }
+      });
+
+      makeDraggable(div);
+      canvas.appendChild(div);
+      nodeId = Math.max(nodeId, parseInt(div.getAttribute('data-id')) + 1);
+    }
+
+    function makeDraggable(el) {
+      let isDragging = false;
+      let offsetX, offsetY;
+
+      el.addEventListener('mousedown', e => {
+        isDragging = true;
+        offsetX = e.offsetX;
+        offsetY = e.offsetY;
+        e.stopPropagation();
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (isDragging) {
+          const snappedX = Math.round((e.pageX - offsetX) / 20) * 20;
+          const snappedY = Math.round((e.pageY - offsetY - canvas.getBoundingClientRect().top) / 20) * 20;
+          el.style.left = `${snappedX}px`;
+          el.style.top = `${snappedY}px`;
+          drawConnections();
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+    }
+
+    function toggleConnectMode(btn) {
+      connectMode = !connectMode;
+      selectedNode = null;
+      btn.style.backgroundColor = connectMode ? '#cce5ff' : '';
+    }
+
+    function handleConnectClick(node) {
+      if (!selectedNode) {
+        selectedNode = node;
+      } else {
+        const fromId = selectedNode.getAttribute('data-id');
+        const toId = node.getAttribute('data-id');
+        if (fromId !== toId) {
+          connections.push([fromId, toId]);
+          drawConnections();
+        }
+        selectedNode = null;
+        connectMode = false;
+        document.querySelector("button[onclick^='toggleConnectMode']").style.backgroundColor = '';
+      }
+    }
+
+    function drawConnections() {
+      svg.innerHTML = '';
+      connections.forEach(([fromId, toId]) => {
+        const from = document.querySelector(`[data-id='${fromId}']`);
+        const to = document.querySelector(`[data-id='${toId}']`);
+        if (from && to) {
+          const x1 = from.offsetLeft + from.offsetWidth / 2;
+          const y1 = from.offsetTop + from.offsetHeight / 2;
+          const x2 = to.offsetLeft + to.offsetWidth / 2;
+          const y2 = to.offsetTop + to.offsetHeight / 2;
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x1);
+          line.setAttribute('y1', y1);
+          line.setAttribute('x2', x2);
+          line.setAttribute('y2', y2);
+          line.setAttribute('stroke', 'black');
+          line.setAttribute('stroke-width', '2');
+          svg.appendChild(line);
+        }
+      });
+    }
+
+    function exportJSON() {
+      const nodes = Array.from(document.querySelectorAll('.node')).map(n => ({
+        id: n.getAttribute('data-id'),
+        text: n.querySelector('.content')?.innerText.trim() || '',
+        x: n.offsetLeft,
+        y: n.offsetTop,
+        process: n.getAttribute('data-process'),
+        mode: n.getAttribute('data-mode') || 'manual'
+      }));
+      const data = {
+        nodes,
+        connections
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'flowchart.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = JSON.parse(e.target.result);
+        canvas.querySelectorAll('.node').forEach(n => n.remove());
+        connections.length = 0;
+        svg.innerHTML = '';
+        data.nodes.forEach(n => createNode({ ...n }));
+        connections.push(...data.connections);
+        nodeId = Math.max(...data.nodes.map(n => parseInt(n.id))) + 1;
+        drawConnections();
+      };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
