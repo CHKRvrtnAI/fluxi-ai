@@ -29,11 +29,6 @@ The resulting JSON is not a description. It's an **intent**.
 
 ## 🔧 Why Fluxi?
 
-Because building autonomous behavior shouldn’t require:
-- 🌀 Prompt engineering
-- 🧱 Agent frameworks
-- 🔌 Custom orchestration
-
 Fluxi gives you:
 - ✅ A simple visual interface
 - ✅ JSON that encodes logic and dependencies
@@ -104,14 +99,7 @@ Just structure → semantics → action.
 
 ---
 
-## 🌐 Works With
-
-- 🧠 Mistral (local)
-- 🤖 GPT-4 / GPT-3.5
-- 🪶 Claude
-- 🧬 Mixtral, Gemma, LLaMA, etc.
-
-Any LLM that can read JSON and reason on it, can execute a Fluxi plan.
+## 🌐 Works With *Any* LLM that can read JSON and reason on it, can execute a Fluxi plan.
 
 ---
 
@@ -121,26 +109,10 @@ Any LLM that can read JSON and reason on it, can execute a Fluxi plan.
 This is a plan in JSON. Get the meaning and follow it logging what you do.
 ```
 
-We don’t hack the model.  
 We just **show it meaning** — and let it think.
 
----
-
-## 🛠️ Folder Structure
-
-```
-fluxi/
- ├── index.html            # The GUI (zero backend)
- ├── semantic_executor.py  # The minimal executor with local LLM
- ├── examples/
- │    └── semantic_flow.json
-```
-
----
 
 ## 📬 Contact
-
-Built with 🧠 by [your name/team/project].  
 Open to contributions, feedback, and new ideas.
 
 > *Planning is declarative. Prompting is improvisation.*  
