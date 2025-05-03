@@ -1,10 +1,9 @@
-# Fluxi Flow Designer – Demo Pages 🌐🧠
+# Fluxi Flow Designer
 
 **Fluxi Flow Designer** is a lightweight, zero-backend GUI for visually composing declarative AI plans — directly in your browser.
 
 🎯 Designed for quick prototyping, demonstration, and exploration.  
 🧱 Built with plain HTML + JS.  
-📦 Deployable instantly via GitHub Pages.
 
 ---
 
