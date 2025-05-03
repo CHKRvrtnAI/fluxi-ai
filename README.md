@@ -1,75 +1,90 @@
-# Fluxi Flow Designer (Demo)
+# Fluxi Flow Designer – Demo Pages 🌐🧠
 
-This is a minimal AI-assisted **flowchart editor**, designed to help teams model and discuss business processes quickly and visually.
+**Fluxi Flow Designer** is a lightweight, zero-backend GUI for visually composing declarative AI plans — directly in your browser.
 
-👉 Built entirely with **HTML + JS**, no frameworks, no build tools.
-👉 Deployed instantly via **GitHub Pages**.
+🎯 Designed for quick prototyping, demonstration, and exploration.  
+🧱 Built with plain HTML + JS.  
+📦 Deployable instantly via GitHub Pages.
 
 ---
 
-## ✨ Features
+## ✨ What It Does
 
-- **Drag & drop** process blocks (OTC, FI, SCM, MM, HR)
-- **Snap-to-grid** positioning
-- **Connect nodes** with live SVG lines
-- Inline editing of step labels
-- Toggle **step type**: `[manual]` or `[auto]`
-- Export/Import flow as JSON
-- Analyze your flow with **Mistral** (if connected)
+- Visual editor for semantic flows
+- Supports **steps**, **tools**, **gates**, and **goals**
+- **Snap-to-grid** interface with draggable nodes
+- **Live connections** rendered via SVG
+- **Inline editing** for logic and metadata
+- **Export/import JSON** plans
+- Ready to be interpreted by any LLM that can reason on structure
 
 ---
 
 ## 🚀 How to Use
 
-1. Open [`index.html`](index.html) locally or on GitHub Pages.
-2. Drag process blocks from the top bar into the canvas.
-3. Click **"Connect Nodes"**, then two blocks to create a connection.
-4. Double-click the step name to edit it.
-5. Click `[manual]` or `[auto]` to toggle step type.
-6. Use "Export JSON" to save your flow.
-7. Use "Import JSON" to reload a saved flow.
+1. Open [`index.html`](index.html) locally or via GitHub Pages.
+2. Add semantic nodes (step, gate, tool, goal).
+3. Use **Connect Nodes** to define flow logic.
+4. Double-click to edit titles or values.
+5. Use **Export JSON** to save your plan.
+6. Load saved plans with **Import JSON**.
+
+---
+
+## 🧠 LLM Integration
+
+This tool is designed to output clean, structured JSON.
+
+You can feed that JSON into any LLM (Mistral, GPT, Claude…) using a simple prompt like:
+
+```txt
+This is a plan in JSON. Get the meaning and follow it logging what you do.
+```
+
+If you're running a local Mistral instance, the "Analyze" button can POST the JSON to:
+
+```http
+POST http://localhost:7860/api/predict
+{
+  "data": ["prompt + json"]
+}
+```
+
+Expected response:
+```json
+{ "data": ["Model output"] }
+```
 
 ---
 
 ## 📦 Tech Stack
 
-- No frameworks
-- Vanilla HTML + JavaScript
-- SVG for rendering connections
-- GitHub Pages for deployment
+- 🧱 No frameworks
+- 💻 HTML + vanilla JavaScript
+- 🎯 SVG for live flow rendering
+- 🚀 GitHub Pages-ready
 
 ---
 
-## 📡 Optional: AI Integration
+## 🧪 Try It Live
 
-To use "Analyze with Mistral", you must have a local API compatible with:
-
-```
-POST http://localhost:7860/api/predict
-{
-  "data": ["string prompt"]
-}
-```
-
-Returns:
-```json
-{ "data": ["AI feedback"] }
-```
-
----
-
-## 🧪 Try the Demo
-This version is designed for GitHub Pages.
-You can view a live version here:
-
+Open the live demo here:  
 👉 `https://chkrvrtnai.github.io/fluxi-ai/`
 
-Or open `index.html` locally in any modern browser.
+Or clone and launch `index.html` in any modern browser.
+
+---
+
+## ⚠️ Note
+
+This is a **demo version** focused on rapid prototyping and education.  
+For production usage, see the full [Fluxi project](https://github.com/your-org/fluxi).
 
 ---
 
 ## 👀 License
 
-MIT License — Use, modify, or fork as you like!
+MIT License — free to use, remix, or fork.
 
----
+> **From flowchart to semantic plan. From plan to AI behavior.**
+> Fluxi makes it visible.
