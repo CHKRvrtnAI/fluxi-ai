@@ -2,286 +2,260 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Flowchart AI Mapper</title>
+  <title>Fluxi 2.0 – Semantic Flowchart</title>
   <style>
-    body { font-family: sans-serif; margin: 0; padding: 0; }
-    #toolbar {
-      padding: 1rem;
-      background: #f0f0f0;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
+    body { margin:0; padding:0; font-family:sans-serif; }
+    #toolbar { padding:1rem; background:#f0f0f0; display:flex; gap:0.5rem; align-items:center; border-bottom:1px solid #ccc; }
+    #toolbar input[type=text] { flex:1; padding:0.5rem; border:1px solid #999; border-radius:4px; }
+    #toolbar button { padding:0.5rem 1rem; border:none; border-radius:4px; background:#007bff; color:#fff; cursor:pointer; }
+    #toolbar button:hover { background:#0056b3; }
     #canvas {
-      width: 100vw;
-      height: calc(100vh - 120px);
-      position: relative;
-      background: #fff;
-      overflow: hidden;
-      cursor: crosshair;
+      position:relative; width:100vw; height:calc(100vh - 60px);
+      background:
+        linear-gradient(to right, rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0,0,0,0.05) 1px, transparent 1px);
+      background-size:20px 20px; overflow:auto;
     }
+    svg { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5; }
+    svg defs marker path { fill:#333; }
+
     .node {
-      position: absolute;
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 5px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-      cursor: move;
-      color: #fff;
-      font-weight: bold;
-      z-index: 10;
+      position:absolute; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.2);
+      color:#fff; cursor:move; user-select:none; min-width:120px; padding:0.75rem; z-index:10;
+      background:#343a40;
     }
-    .node[data-process="OTC"] { background: #d9534f; }
-    .node[data-process="FI"] { background: #5cb85c; }
-    .node[data-process="SCM"] { background: #f0ad4e; }
-    .node[data-process="MM"] { background: #5bc0de; }
-    .node[data-process="HR"] { background: #9370DB; }
-
-    .node .content {
-      outline: none;
+    .node.step  { background:#343a40; }
+    .node.goal  { background:#28a745; }
+    .node.tool  { background:#17a2b8; min-width:180px; }
+    /* rombo per gate */
+    .node.gate {
+      width:80px; height:80px; padding:0; background:#6f42c1;
+      border-radius:0;
+    }
+    .node.gate .inner {
+      transform:rotate(-45deg); width:80px; height:80px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
     }
 
-    .mode-toggle {
-      display: block;
-      font-size: 0.75rem;
-      font-weight: normal;
-      color: white;
-      margin-top: 4px;
-      cursor: pointer;
+    .node .title { font-weight:bold; margin-bottom:0.5rem; cursor:text; text-align:center; }
+    .node input {
+      width:calc(100% - 10px); margin-bottom:0.25rem;
+      padding:4px; border:1px solid #ccc; border-radius:3px;
+      cursor:text; color:#000; user-select:text;
     }
-
-    svg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 5;
-    }
-    #result {
-      padding: 1rem;
-      font-family: monospace;
-      background: #f9f9f9;
-      border-top: 1px solid #ccc;
-      height: 100px;
-      overflow: auto;
-    }
-    button, label.toolbar-button {
-      padding: 0.5rem 1rem;
-      background-color: #f0f0f0;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    button:hover, label.toolbar-button:hover {
-      background-color: #e0e0e0;
-    }
-    #node-picker {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-    .node-template {
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
-      color: #fff;
-      font-weight: bold;
-      cursor: grab;
-      user-select: none;
-    }
-    .node-template[data-process="OTC"] { background: #d9534f; }
-    .node-template[data-process="FI"] { background: #5cb85c; }
-    .node-template[data-process="SCM"] { background: #f0ad4e; }
-    .node-template[data-process="MM"] { background: #5bc0de; }
-    .node-template[data-process="HR"] { background: #9370DB; }
+    .details { display:none; }
   </style>
 </head>
 <body>
   <div id="toolbar">
-    <div id="node-picker">
-      <div class="node-template" draggable="true" data-process="OTC">OTC</div>
-      <div class="node-template" draggable="true" data-process="FI">FI</div>
-      <div class="node-template" draggable="true" data-process="SCM">SCM</div>
-      <div class="node-template" draggable="true" data-process="MM">MM</div>
-      <div class="node-template" draggable="true" data-process="HR">HR</div>
-    </div>
-    <button onclick="toggleConnectMode(this)">Connect Nodes</button>
-    <button onclick="analyze()">Analyze with Mistral</button>
+    <input type="text" id="goalText" placeholder="Enter goal (last node)" />
+    <button onclick="addStep()">Add Step</button>
+    <button onclick="addGate()">Add Gate</button>
+    <button onclick="addGoal()">Add Goal</button>
+    <button onclick="addTool()">Add Tool</button>
+    <button id="connectBtn" onclick="toggleConnect()">Connect Nodes</button>
     <button onclick="exportJSON()">Export JSON</button>
-    <label for="importFile" class="toolbar-button">Import JSON</label>
-    <input type="file" id="importFile" accept="application/json" onchange="importJSON(event)" style="display: none;">
+    <button onclick="importBtn.click()">Import JSON</button>
+    <input type="file" id="importBtn" accept="application/json" style="display:none" onchange="importJSON(event)">
   </div>
-  <div id="canvas" ondragover="event.preventDefault()" ondrop="dropNode(event)">
-    <svg id="connections" style="position:absolute;top:0;left:0;pointer-events:none;z-index:5;" width="100%" height="100%"></svg>
+  <div id="canvas">
+    <svg id="connections">
+      <defs>
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z"/>
+        </marker>
+      </defs>
+    </svg>
   </div>
-  <div id="result">AI Feedback: ...</div>
-
   <script>
-    let nodeId = 0;
-    const canvas = document.getElementById('canvas');
-    const svg = document.getElementById('connections');
-    let connections = [];
-    let connectMode = false;
-    let selectedNode = null;
+    let idCounter=0, connections=[], connectMode=false, firstNode=null;
+    const canvas=document.getElementById('canvas'),
+          svg=document.getElementById('connections'),
+          importBtn=document.getElementById('importBtn');
 
-    function dropNode(event) {
-      event.preventDefault();
-      const processType = event.dataTransfer.getData("text/plain");
-      const x = event.clientX;
-      const y = event.clientY - canvas.getBoundingClientRect().top;
-      createNode({ process: processType, x, y });
-    }
+    function addStep(){ createNode('step'); }
+    function addGate(){ createNode('gate'); }
+    function addGoal(){ createNode('goal', document.getElementById('goalText').value || 'Goal'); }
+    function addTool(){ createNode('tool', 'Tool'); }
 
-    document.querySelectorAll('.node-template').forEach(template => {
-      template.addEventListener('dragstart', e => {
-        e.dataTransfer.setData("text/plain", template.getAttribute("data-process"));
-      });
-    });
+    function createNode(type,text,forcedId){
+      const id=forcedId||('n'+(idCounter++));
+      const div=document.createElement('div');
+      div.className='node '+type;
+      div.dataset.id=id; div.dataset.type=type;
+      div.style.left='50px'; div.style.top='50px';
 
-    function createNode({ process = "OTC", x = 100, y = 100, text = "New step", id = null, mode = "manual" }) {
-      const div = document.createElement('div');
-      div.className = 'node';
-      div.setAttribute('data-id', id !== null ? id : nodeId);
-      div.setAttribute('data-process', process);
-      div.setAttribute('data-mode', mode);
-      div.style.left = `${x}px`;
-      div.style.top = `${y}px`;
+      if(type==='gate'){
+        const inner=document.createElement('div'); inner.className='inner';
+        const title=document.createElement('div'); title.className='title'; title.contentEditable=true;
+        title.innerText=text||'Gate'; inner.appendChild(title);
+        ['cond','then','else'].forEach(f=>{
+          const inp=document.createElement('input'); inp.placeholder=f; inp.className=f;
+          inner.appendChild(inp);
+        });
+        div.appendChild(inner);
 
-      const content = document.createElement('div');
-      content.className = 'content';
-      content.contentEditable = true;
-      content.innerText = text;
-      div.appendChild(content);
+      } else {
+        const title=document.createElement('div'); title.className='title'; title.contentEditable=true;
+        title.innerText=text||(type==='step'?'Step '+id:type==='tool'?'Tool':'Goal');
+        div.appendChild(title);
 
-      const modeToggle = document.createElement('div');
-      modeToggle.className = 'mode-toggle';
-      modeToggle.innerText = `[${mode}]`;
-      modeToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const current = div.getAttribute('data-mode');
-        const newMode = current === 'manual' ? 'auto' : 'manual';
-        div.setAttribute('data-mode', newMode);
-        modeToggle.innerText = `[${newMode}]`;
-      });
-      div.appendChild(modeToggle);
-
-      div.addEventListener('click', (e) => {
-        if (connectMode && !e.target.isContentEditable) {
+        const details=document.createElement('div'); details.className='details';
+        if(type==='step') ['action','output'].forEach(f=>{
+          const inp=document.createElement('input'); inp.placeholder=f; inp.className=f; details.appendChild(inp);
+        });
+        if(type==='tool') ['name','description','input_schema','output_schema'].forEach(f=>{
+          const inp=document.createElement('input'); inp.placeholder=f; inp.className=f; details.appendChild(inp);
+        });
+        div.appendChild(details);
+        div.addEventListener('dblclick',e=>{
           e.stopPropagation();
-          handleConnectClick(div);
-        }
-      });
+          details.style.display = details.style.display==='block'?'none':'block';
+        });
+      }
 
       makeDraggable(div);
+      div.addEventListener('click',e=>{
+        if(connectMode && !e.target.isContentEditable){
+          e.stopPropagation();
+          if(!firstNode) firstNode=div;
+          else {
+            connections.push([firstNode.dataset.id,div.dataset.id]);
+            firstNode=null;
+            toggleConnect(true);
+            drawConnections();
+          }
+        }
+      });
+
       canvas.appendChild(div);
-      nodeId = Math.max(nodeId, parseInt(div.getAttribute('data-id')) + 1);
+      drawConnections();
     }
 
-    function makeDraggable(el) {
-      let isDragging = false;
-      let offsetX, offsetY;
-
-      el.addEventListener('mousedown', e => {
-        isDragging = true;
-        offsetX = e.offsetX;
-        offsetY = e.offsetY;
-        e.stopPropagation();
-      });
-
-      document.addEventListener('mousemove', e => {
-        if (isDragging) {
-          const snappedX = Math.round((e.pageX - offsetX) / 20) * 20;
-          const snappedY = Math.round((e.pageY - offsetY - canvas.getBoundingClientRect().top) / 20) * 20;
-          el.style.left = `${snappedX}px`;
-          el.style.top = `${snappedY}px`;
+    function makeDraggable(el){
+      el.addEventListener('mousedown',e=>{
+        if(e.target.tagName==='INPUT'||e.target.isContentEditable) return;
+        let dx=e.offsetX, dy=e.offsetY, dragging=true;
+        function mm(ev){
+          if(!dragging) return;
+          let x=ev.pageX-canvas.getBoundingClientRect().left-dx;
+          let y=ev.pageY-canvas.getBoundingClientRect().top-dy;
+          el.style.left=Math.round(x/20)*20+'px';
+          el.style.top =Math.round(y/20)*20+'px';
           drawConnections();
         }
-      });
-
-      document.addEventListener('mouseup', () => {
-        isDragging = false;
-      });
-    }
-
-    function toggleConnectMode(btn) {
-      connectMode = !connectMode;
-      selectedNode = null;
-      btn.style.backgroundColor = connectMode ? '#cce5ff' : '';
-    }
-
-    function handleConnectClick(node) {
-      if (!selectedNode) {
-        selectedNode = node;
-      } else {
-        const fromId = selectedNode.getAttribute('data-id');
-        const toId = node.getAttribute('data-id');
-        if (fromId !== toId) {
-          connections.push([fromId, toId]);
-          drawConnections();
-        }
-        selectedNode = null;
-        connectMode = false;
-        document.querySelector("button[onclick^='toggleConnectMode']").style.backgroundColor = '';
-      }
-    }
-
-    function drawConnections() {
-      svg.innerHTML = '';
-      connections.forEach(([fromId, toId]) => {
-        const from = document.querySelector(`[data-id='${fromId}']`);
-        const to = document.querySelector(`[data-id='${toId}']`);
-        if (from && to) {
-          const x1 = from.offsetLeft + from.offsetWidth / 2;
-          const y1 = from.offsetTop + from.offsetHeight / 2;
-          const x2 = to.offsetLeft + to.offsetWidth / 2;
-          const y2 = to.offsetTop + to.offsetHeight / 2;
-          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          line.setAttribute('x1', x1);
-          line.setAttribute('y1', y1);
-          line.setAttribute('x2', x2);
-          line.setAttribute('y2', y2);
-          line.setAttribute('stroke', 'black');
-          line.setAttribute('stroke-width', '2');
-          svg.appendChild(line);
-        }
+        function mu(){ dragging=false; document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu); }
+        document.addEventListener('mousemove',mm);
+        document.addEventListener('mouseup',mu);
       });
     }
 
-    function exportJSON() {
-      const nodes = Array.from(document.querySelectorAll('.node')).map(n => ({
-        id: n.getAttribute('data-id'),
-        text: n.querySelector('.content')?.innerText.trim() || '',
-        x: n.offsetLeft,
-        y: n.offsetTop,
-        process: n.getAttribute('data-process'),
-        mode: n.getAttribute('data-mode') || 'manual'
+    function toggleConnect(forceOff){
+      connectMode = forceOff?false:!connectMode;
+      document.getElementById('connectBtn').style.background = connectMode?'#ffc':'#007bff';
+      if(!connectMode) firstNode=null;
+    }
+
+    function drawConnections(){
+      svg.querySelectorAll('line').forEach(l=>l.remove());
+      const nodes=[...document.querySelectorAll('.node')];
+      connections.forEach(([f,t])=>{
+        const from=nodes.find(n=>n.dataset.id===f),
+              to  =nodes.find(n=>n.dataset.id===t);
+        if(!from||!to) return;
+        const a=from.getBoundingClientRect(), b=to.getBoundingClientRect(), c=canvas.getBoundingClientRect();
+        const x1=a.left+a.width/2-c.left, y1=a.top+a.height/2-c.top,
+              x2=b.left+b.width/2-c.left, y2=b.top+b.height/2-c.top;
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',x1); line.setAttribute('y1',y1);
+        line.setAttribute('x2',x2); line.setAttribute('y2',y2);
+        line.setAttribute('stroke','#333'); line.setAttribute('stroke-width','2');
+        line.setAttribute('marker-end','url(#arrow)');
+        svg.appendChild(line);
+      });
+    }
+
+    function exportJSON(){
+      const goal=document.getElementById('goalText').value;
+      const all=[...document.querySelectorAll('.node')];
+      const tools=all.filter(d=>d.dataset.type==='tool').map(div=>({
+        name:div.querySelector('.name').value||div.querySelector('.title').innerText,
+        description:div.querySelector('.description').value,
+        input_schema:div.querySelector('.input_schema').value,
+        output_schema:div.querySelector('.output_schema').value
       }));
-      const data = {
-        nodes,
-        connections
-      };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'flowchart.json';
-      a.click();
-      URL.revokeObjectURL(url);
+      const steps=all.filter(d=>d.dataset.type!=='tool').map(div=>{
+        const id=div.dataset.id, type=div.dataset.type;
+        if(type==='step') return {id,action:div.querySelector('.action').value,output:div.querySelector('.output').value};
+        if(type==='gate') return {
+          id,type:'gate',
+          condition:{if:div.querySelector('.cond').value},
+          then:{set:{value:div.querySelector('.then').value}},
+          else:{set:{value:div.querySelector('.else').value}}
+        };
+        return {id,text:div.querySelector('.title').innerText};
+      });
+      const data={goal,context:{},tools,steps,connections,criteria:{}};
+      const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='semantic_flow.json'; a.click();
     }
 
-    function importJSON(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const data = JSON.parse(e.target.result);
-        canvas.querySelectorAll('.node').forEach(n => n.remove());
-        connections.length = 0;
-        svg.innerHTML = '';
-        data.nodes.forEach(n => createNode({ ...n }));
-        connections.push(...data.connections);
-        nodeId = Math.max(...data.nodes.map(n => parseInt(n.id))) + 1;
+    function importJSON(evt){
+      const file=evt.target.files[0]; if(!file) return;
+      const reader=new FileReader();
+      reader.onload=e=>{
+        const d=JSON.parse(e.target.result);
+        document.querySelectorAll('.node').forEach(n=>n.remove());
+        connections=[]; document.getElementById('goalText').value=d.goal||'';
+        // create tools, track map name→id
+        const toolMap = {};
+        (d.tools||[]).forEach((t,i)=>{
+          const tid='t'+i;
+          createNode('tool',t.name,tid);
+          const div=document.querySelector(`[data-id='${tid}']`);
+          div.querySelector('.description').value=t.description||'';
+          div.querySelector('.input_schema').value=t.input_schema||'';
+          div.querySelector('.output_schema').value=t.output_schema||'';
+          toolMap[t.name]=tid;
+        });
+        // create steps/goals/gates
+        (d.steps||[]).forEach(st=>{
+          const type=st.type==='gate'?'gate':st.text?'goal':'step';
+          createNode(type,st.text||st.id,st.id);
+          const div=document.querySelector(`[data-id='${st.id}']`);
+          if(type==='step'){
+            div.querySelector('.action').value=st.action||'';
+            div.querySelector('.output').value=st.output||'';
+          }
+          if(type==='gate'){
+            div.querySelector('.cond').value=st.condition?.if||'';
+            div.querySelector('.then').value=st.then?.set?.value||'';
+            div.querySelector('.else').value=st.else?.set?.value||'';
+          }
+        });
+        // auto-link if missing
+        if(!Array.isArray(d.connections)){
+          // tools → steps by action match
+          d.steps.forEach(st=>{
+            if(st.action && toolMap[st.action]){
+              connections.push([toolMap[st.action], st.id]);
+            }
+          });
+          // chain steps + goal
+          for(let i=0; i<d.steps.length-1; i++){
+            connections.push([d.steps[i].id, d.steps[i+1].id]);
+          }
+          // last step → goal (if any)
+          if(d.steps.length && d.goal){
+            connections.push([d.steps[d.steps.length-1].id, 'n'+(idCounter)]); 
+          }
+        } else {
+          d.connections.forEach(c=>connections.push(c));
+        }
+        // bump counter
+        const ids=d.steps.map(st=>parseInt((st.id.match(/\d+$/)||['0'])[0],10));
+        idCounter=Math.max(...ids,idCounter)+1;
         drawConnections();
       };
       reader.readAsText(file);
