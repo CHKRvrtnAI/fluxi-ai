@@ -8,18 +8,20 @@ const stepTypes: { type: StepType; label: string; icon: string }[] = [
   { type: 'continuation', label: 'Next Process', icon: '↗' },
 ];
 
-interface SidebarProps {
-  onAddNode: (type: StepType) => void;
-}
+export default function Sidebar() {
+  const onDragStart = (e: React.DragEvent, type: StepType) => {
+    e.dataTransfer.setData('application/fluxi-node', type);
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
-export default function Sidebar({ onAddNode }: SidebarProps) {
   return (
     <div style={{ width: 200, padding: 16, borderRight: '1px solid #e5e7eb', background: '#f9fafb' }}>
       <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>Steps</h3>
       {stepTypes.map((st) => (
         <div
           key={st.type}
-          onClick={() => onAddNode(st.type)}
+          draggable
+          onDragStart={(e) => onDragStart(e, st.type)}
           style={{
             padding: '8px 12px',
             marginBottom: 6,
@@ -28,6 +30,7 @@ export default function Sidebar({ onAddNode }: SidebarProps) {
             background: '#fff',
             cursor: 'grab',
             fontSize: 13,
+            userSelect: 'none',
           }}
         >
           {st.icon} {st.label}

@@ -24,7 +24,7 @@ const nodeTypes = { blueprint: BlueprintNode };
 
 function EditorInner() {
   const { blueprint, updateNodes, updateEdges, selectNode, selectedNodeId, newBlueprint } = useBlueprintStore();
-  const { setNodes: rfSetNodes, setEdges: rfSetEdges } = useReactFlow();
+  const { screenToFlowPosition } = useReactFlow();
   const updateNodeInternals = useUpdateNodeInternals();
   const [nodes, setNodes, onNodesChange] = useNodesState(blueprint?.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(
@@ -149,13 +149,24 @@ function EditorInner() {
     [setEdges, nodes, edges, syncToStore]
   );
 
-  const onAddNode = useCallback(
-    (type: StepType) => {
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const type = e.dataTransfer.getData('application/fluxi-node') as StepType;
+      if (!type) return;
+
+      const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
       const label = type === 'continuation' ? 'Next Process' : type.charAt(0).toUpperCase() + type.slice(1);
+
       const newNode = {
         id: uuid(),
         type: 'blueprint',
-        position: { x: 250 + Math.random() * 100, y: 150 + Math.random() * 100 },
+        position,
         data: {
           label,
           stepType: type,
@@ -166,13 +177,14 @@ function EditorInner() {
           inLinkCount: 1,
         },
       };
+
       setNodes((nds) => {
         const next = [...nds, newNode];
         syncToStore(next, edges);
         return next;
       });
     },
-    [setNodes, edges, syncToStore]
+    [screenToFlowPosition, setNodes, edges, syncToStore]
   );
 
   const onNodeClick = useCallback((_: any, node: any) => {
@@ -189,7 +201,7 @@ function EditorInner() {
 
   return (
     <div style={{ display: 'flex', height: '100%' }}>
-      <Sidebar onAddNode={onAddNode} />
+      <Sidebar />
       <div style={{ flex: 1 }}>
         <ReactFlow
           nodes={nodes}
@@ -200,6 +212,8 @@ function EditorInner() {
           onNodeClick={onNodeClick}
           onEdgeDoubleClick={onEdgeDoubleClick}
           onPaneClick={onPaneClick}
+          onDragOver={onDragOver}
+          onDrop={onDrop}
           nodeTypes={nodeTypes}
           fitView
           style={{ background: '#f8fafc' }}
