@@ -1,119 +1,128 @@
-# Fluxi 🧠📊
+# Fluxi
 
-**Fluxi is a visual editor for creating declarative AI plans.**
+Fluxi is a platform for turning implicit organizational knowledge into an auditable, executable, and improvable process map.
 
-It empowers people — even with minimal technical skills — to design structured flows in JSON that language models can understand and execute.
-
-No chains. No agents. No magic prompts.  
-Just meaning, encoded in structure.
+It's for the companies that are replacing people with machines — and don't actually know what those people were doing.
 
 ---
 
-## ✨ What is Fluxi?
+## The Problem Nobody Wants to Talk About
 
-Fluxi is a **GUI** for building semantic execution plans — step by step.
+Organizations are rushing to automate. AI is the mandate. Cut costs, move faster, reduce headcount.
 
-Each block you create represents:
-- a **logical action** (`step`)
-- a **decision point** (`gate`)
-- a **tool** the model can use
-- or a **goal** to reach
+But here's the uncomfortable truth: most companies don't fully understand what their people do, why they do it that way, or what knowledge disappears when they leave.
 
-Each connection defines a **dependency** or **reasoning flow**.  
-The resulting JSON is not a description. It's an **intent**.
+They're swapping humans for machines without a clear picture of the process they're automating. The veteran who knows which supplier to call when the system says one thing but reality says another. The analyst who checks three things before approving that no manual describes. The operator who's been doing it "the right way" for 20 years and never wrote it down.
 
-> 🧩 The meaning is not in the prompt. It’s in the plan.  
-> The model doesn’t guess. It reads, understands, and acts.
+You can't automate what you don't understand. And you definitely can't automate it well.
+
+Fluxi captures that knowledge — while the people who hold it are still here — before you hand the keys to a machine.
 
 ---
 
-## 🔧 Why Fluxi?
+## What Fluxi Does
 
-Fluxi gives you:
-- ✅ A simple visual interface
-- ✅ JSON that encodes logic and dependencies
-- ✅ Compatibility with any LLM
-- ✅ No hidden logic, no wrappers
+Fluxi captures what your people know — before you need to know it yourself.
 
----
+**Build the "as-is" visually.** Your team drags and drops the process as they understand it. Steps, decisions, dependencies, the unwritten rules. No abstract frameworks. No IT project. Just: "show us how it actually works." Minutes to build. The result is a structured blueprint that encodes decades of experience — owned by the organization, not trapped in individual heads.
 
-## 🧪 How It Works
+**Make it corporate knowledge.** The blueprint isn't a document in a shared drive. It's a versioned, auditable, structured artifact. Reviewable. Approvable. Traceable. The knowledge stays even when the person doesn't. And it becomes the basis for every decision about what to automate, what to keep human, and what to change.
 
-### 1. **Create a plan**
+**Run it.** The blueprint connects to your existing systems and tools. It executes — with humans, with AI, or with the right mix for each step. Every action traces back to the blueprint. You know who designed it, who approved it, and why each step exists.
 
-Use the GUI to visually compose a process with:
-- `steps` → tasks to perform
-- `tools` → external operations
-- `gates` → branching logic
-- `goals` → final outcomes
-
-### 2. **Export JSON**
-
-The GUI generates a semantic JSON plan — complete, inspectable, executable.
-
-### 3. **Send to LLM**
-
-Use the canonical Fluxi prompt:
-
-```txt
-This is a plan in JSON. Get the meaning and follow it logging what you do.
-```
-
-And send it to any model — local or cloud.
+**Analyze and improve.** Execution data feeds back. You see where the process breaks, where intuition diverges from reality, where the unwritten rules create bottlenecks. The knowledge doesn't just get captured. It gets better.
 
 ---
 
-## 🧠 Example
+## Why Middle Market
 
-Using that prompt, and a JSON plan like this:
+Enterprise platforms come with enterprise prices, enterprise timelines, and enterprise complexity. Middle-market companies don't need a $500K implementation. They need to sit down with their people, capture what they know, and make it theirs — before those people are gone or before automation replaces something critical they didn't know was critical.
 
-```json
-{
-  "goal": "Generate and send a weekly summary email for the project stakeholders.",
-  "steps": [
-    { "id": "fetch-status", "action": "http_get", "output": "project_status" },
-    { "id": "summarize", "action": "summarize_text", "output": "summary_text" },
-    { "id": "compose-email", "action": "compose_email", "output": "email_draft" },
-    { "id": "send-summary", "action": "send_email", "output": "email_status" }
-  ]
-}
-```
+Fluxi is built for that.
 
-The LLM will respond with something like:
-
-```txt
-1. Fetch the project status from the server using the http_get tool. Store the response in the project_status variable.
-
-2. Summarize the project status using the summarize_text tool. Store the summary in the summary_text variable.
-
-3. Compose the email using the compose_email tool, passing the summary_text and the appropriate tone as parameters. Store the email draft in the email_draft variable.
-
-4. Send the email to the project stakeholders using the send_email tool, passing the email_draft as the input. Store the email status in the email_status variable.
-
-5. The goal "Generate and send a weekly summary email for the project stakeholders." is achieved when the email is sent successfully.
-```
-
-That’s it.  
-**No further logic required.**  
-Just structure → semantics → action.
+- **Fast to start.** Visual editor. Drag and drop. Your first blueprint in an afternoon.
+- **Low barrier.** No consultants. No six-month deployment. No training program.
+- **Affordable.** Pricing that makes sense for a 50-person operations team, not a 5,000-person enterprise.
+- **Grown-in value.** The more blueprints you build, the more knowledge you capture, the more the platform becomes essential.
 
 ---
 
-## 🌐 Works With *Any* LLM that can read JSON and reason on it, can execute a Fluxi plan.
+## Why It's Not Just Another Tool
+
+Automation tools connect systems. Fluxi captures reasoning.
+
+Process mining tells you what happened in your systems. It can't capture the judgment call that never touched a screen.
+
+Documentation sits in a drive and rots. Blueprints live, evolve, and produce data.
+
+The difference isn't technical. It's philosophical. Fluxi treats organizational knowledge as an asset — one that needs to be extracted, owned, governed, and improved. Not a byproduct of systems. A product of people.
+
+And when you have that asset, every decision about automation becomes smarter. Every AI initiative starts with understanding instead of assumption.
 
 ---
 
-## 🧭 Canonical Fluxi Invocation
+## How It Works
 
-```txt
-This is a plan in JSON. Get the meaning and follow it logging what you do.
-```
+**Capture.** Visual editor. Drag-drop steps, gates, tools, actors, dependencies. Your "as-is" with full fidelity.
 
-We just **show it meaning** — and let it think.
+**Govern.** Every blueprint is versioned, reviewable, attributable, and auditable. Who built it, who approved it, when it changed, and why.
 
+**Execute.** Push to an orchestrator. Run with humans, AI, or hybrid. Every action traces to the blueprint.
 
-## 📬 Contact
-Open to contributions, feedback, and new ideas.
+**Analyze.** Reasoning performance intelligence. Where it breaks, where it's slow, where it costs too much.
 
-> *Planning is declarative. Prompting is improvisation.*  
-> — Fluxi
+**Improve.** Refine step by step. Version it. Redeploy. Continuous improvement without re-engineering projects.
+
+---
+
+## One Platform. Not Monolithic.
+
+Fluxi is built in composable layers:
+
+- **Blueprint engine** — editor, validation, versioning, collaboration
+- **Execution layer** — orchestrator integration, model and tool routing
+- **Knowledge graph** — structured capture of every execution and outcome
+- **Analysis layer** — reasoning performance intelligence
+- **Governance module** — approvals, audit trails, compliance, full traceability
+
+Start where you need. Expand when you're ready.
+
+---
+
+## Agnostic
+
+Fluxi doesn't pick your model, your tools, or your vendor.
+
+Your blueprints work with any system that can read structured reasoning. Connect to what you already use. Take your blueprints anywhere.
+
+No lock-in. No ecosystem tax. The knowledge is yours.
+
+---
+
+## The Principle
+
+You can't automate what you don't understand. And right now, most organizations don't understand their own processes — not the real ones, the ones that live in people's heads.
+
+Fluxi extracts that knowledge. Structures it. Makes it corporate property. Not trapped in individuals. Not lost when someone leaves. Grounded in the organization itself.
+
+Once the knowledge is grounded, everything changes. Training becomes surgical — you know exactly what each person needs to learn. Automation becomes obvious — you know exactly what to automate and what to keep human. The organization becomes resilient — the process runs regardless of who's in the chair.
+
+The future isn't replacing people with machines. It's understanding what people do — and then building an organization that owns that understanding forever.
+
+---
+
+## Vision
+
+> Corporate knowledge, grounded. Not in people. In the organization.
+
+---
+
+## Status
+
+Early development. Architecture designed. Building now.
+
+---
+
+## Contact
+
+Open to contributions, collaboration, and early design partners.
