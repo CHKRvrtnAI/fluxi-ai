@@ -111,6 +111,12 @@ The future isn't replacing people with machines. It's understanding what people 
 
 ---
 
+## License
+
+MIT
+
+---
+
 ## Vision
 
 > Corporate knowledge, grounded. Not in people. In the organization.
