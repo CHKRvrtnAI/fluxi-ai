@@ -1,0 +1,116 @@
+{
+  "goal": "Generate and send a weekly summary email for the project stakeholders.",
+  "context": {},
+  "tools": [
+    {
+      "name": "http_get",
+      "description": "Retrieve data from a given URL",
+      "input_schema": "[object Object]",
+      "output_schema": "[object Object]"
+    },
+    {
+      "name": "summarize_text",
+      "description": "Summarize a text block",
+      "input_schema": "[object Object]",
+      "output_schema": "[object Object]"
+    },
+    {
+      "name": "compose_email",
+      "description": "Generate an email from a summary and audience parameters",
+      "input_schema": "[object Object]",
+      "output_schema": "[object Object]"
+    },
+    {
+      "name": "send_email",
+      "description": "Send an email to a list of recipients",
+      "input_schema": "[object Object]",
+      "output_schema": "[object Object]"
+    }
+  ],
+  "steps": [
+    {
+      "id": "fetch-status",
+      "action": "http_get",
+      "output": "project_status"
+    },
+    {
+      "id": "summarize",
+      "action": "summarize_text",
+      "output": "summary_text"
+    },
+    {
+      "id": "decide-tone",
+      "type": "gate",
+      "condition": {
+        "if": "${context.has_external_stakeholders} == true"
+      },
+      "then": {
+        "set": {
+          "value": "formal"
+        }
+      },
+      "else": {
+        "set": {
+          "value": "professional but friendly"
+        }
+      }
+    },
+    {
+      "id": "compose-email",
+      "action": "compose_email",
+      "output": "email_draft"
+    },
+    {
+      "id": "send-summary",
+      "action": "send_email",
+      "output": "email_status"
+    },
+    {
+      "id": "n1",
+      "text": "Generate and send a weekly summary email for the project stakeholders."
+    }
+  ],
+  "connections": [
+    [
+      "t0",
+      "fetch-status"
+    ],
+    [
+      "t1",
+      "summarize"
+    ],
+    [
+      "t2",
+      "compose-email"
+    ],
+    [
+      "t3",
+      "send-summary"
+    ],
+    [
+      "fetch-status",
+      "summarize"
+    ],
+    [
+      "summarize",
+      "decide-tone"
+    ],
+    [
+      "decide-tone",
+      "compose-email"
+    ],
+    [
+      "compose-email",
+      "send-summary"
+    ],
+    [
+      "send-summary",
+      "n0"
+    ],
+    [
+      "t3",
+      "n1"
+    ]
+  ],
+  "criteria": {}
+}
