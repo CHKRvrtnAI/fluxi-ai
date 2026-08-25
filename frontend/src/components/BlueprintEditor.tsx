@@ -23,13 +23,26 @@ import { v4 as uuid } from 'uuid';
 const nodeTypes = { blueprint: BlueprintNode };
 
 function EditorInner() {
-  const { blueprint, updateNodes, updateEdges, selectNode, selectedNodeId } = useBlueprintStore();
+  const { blueprint, updateNodes, updateEdges, selectNode, selectedNodeId, newBlueprint } = useBlueprintStore();
   const { setNodes: rfSetNodes, setEdges: rfSetEdges } = useReactFlow();
   const updateNodeInternals = useUpdateNodeInternals();
   const [nodes, setNodes, onNodesChange] = useNodesState(blueprint?.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     (blueprint?.edges || []).map((e) => ({ ...e, animated: true }))
   );
+
+  useEffect(() => {
+    if (!blueprint) {
+      newBlueprint();
+    }
+  }, [blueprint, newBlueprint]);
+
+  useEffect(() => {
+    if (blueprint) {
+      setNodes(blueprint.nodes);
+      setEdges(blueprint.edges.map((e) => ({ ...e, animated: true })));
+    }
+  }, [blueprint?.id]);
 
   const syncToStore = useCallback(
     (n: any[], e: any[]) => {
@@ -105,19 +118,14 @@ function EditorInner() {
       const sourceData = sourceNode.data as any;
       const targetData = targetNode.data as any;
 
-      // Start: no incoming
       if (targetData.stepType === 'start') return;
-      // Continuation: no outgoing
       if (sourceData.stepType === 'continuation') return;
-      // Finish: only outgoing to continuation
       if (sourceData.stepType === 'finish' && targetData.stepType !== 'continuation') return;
-      // Finish: max 1 outgoing
       if (sourceData.stepType === 'finish') {
         const outEdges = edges.filter((e) => e.source === conn.source);
         if (outEdges.length >= 1) return;
       }
 
-      // Check handle not already used
       if (conn.sourceHandle) {
         const used = edges.some(
           (e) => e.source === conn.source && e.sourceHandle === conn.sourceHandle
@@ -180,7 +188,7 @@ function EditorInner() {
   }, [selectNode]);
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div style={{ display: 'flex', height: '100%' }}>
       <Sidebar onAddNode={onAddNode} />
       <div style={{ flex: 1 }}>
         <ReactFlow

@@ -20,6 +20,11 @@ app.add_middleware(
 app.include_router(blueprints_router, prefix="/api/v1")
 
 
+@app.on_event("startup")
+def startup():
+    print(f"Fluxi API starting — ArangoDB configured at {settings.ARANGO_URL}")
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
