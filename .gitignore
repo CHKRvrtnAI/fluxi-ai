@@ -1,6 +1,29 @@
+# Internal docs
 COMPETITIVE-ANALYSIS.md
 ARR-ESTIMATE.md
 CORE-DEPENDENCIES.md
 roadmap.md
 spec.md
 techstack.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Environment
+.env
+
+# Docker
+docker-compose.override.yml
+
+# IDE
+.vscode/
+.idea/
