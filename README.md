@@ -1,89 +1,82 @@
-# Fluxi Flow Designer
+# Fluxi — Visual Editor Prototype
 
-**Fluxi Flow Designer** is a lightweight, zero-backend GUI for visually composing declarative AI plans — directly in your browser.
+This is the first working prototype of Fluxi's visual editor.
 
-🎯 Designed for quick prototyping, demonstration, and exploration.  
-🧱 Built with plain HTML + JS.  
-
----
-
-## ✨ What It Does
-
-- Visual editor for semantic flows
-- Supports **steps**, **tools**, **gates**, and **goals**
-- **Snap-to-grid** interface with draggable nodes
-- **Live connections** rendered via SVG
-- **Inline editing** for logic and metadata
-- **Export/import JSON** plans
-- Ready to be interpreted by any LLM that can reason on structure
+A browser-based drag-and-drop interface for creating process blueprints — steps, gates, tools, actors, and goals — exported as structured JSON.
 
 ---
 
-## 🚀 How to Use
+## What This Is
 
-1. Open [`index.html`](index.html) locally or via GitHub Pages.
-2. Add semantic nodes (step, gate, tool, goal).
-3. Use **Connect Nodes** to define flow logic.
-4. Double-click to edit titles or values.
-5. Use **Export JSON** to save your plan.
-6. Load saved plans with **Import JSON**.
+This prototype demonstrates the core interaction model of Fluxi: **capture what you know as a visual blueprint.**
+
+- Drag and drop nodes: Step, Gate, Tool, Goal
+- Connect nodes to define flow logic
+- Inline editing for titles and metadata
+- Export and import structured JSON plans
+- Zero backend. Runs entirely in the browser.
+
+It's the seed of what Fluxi becomes: a full platform for process knowledge capture, execution, analysis, and governance.
 
 ---
 
-## 🧠 LLM Integration
+## How It Works
 
-This tool is designed to output clean, structured JSON.
+1. Open `index.html` in any modern browser
+2. Add nodes from the toolbar
+3. Connect nodes by selecting source and target
+4. Double-click to edit node properties
+5. Export your blueprint as JSON
+6. Import previously saved blueprints
 
-You can feed that JSON into any LLM (Mistral, GPT, Claude…) using a simple prompt like:
+---
 
-```txt
-This is a plan in JSON. Get the meaning and follow it logging what you do.
-```
+## The Blueprint Format
 
-If you're running a local Mistral instance, the "Analyze" button can POST the JSON to:
+The exported JSON is a structured process blueprint:
 
-```http
-POST http://localhost:7860/api/predict
+```json
 {
-  "data": ["prompt + json"]
+  "nodes": [
+    { "id": "step_1", "type": "step", "title": "Fetch data" },
+    { "id": "gate_1", "type": "gate", "title": "Data valid?" },
+    { "id": "tool_1", "type": "tool", "title": "API call" },
+    { "id": "goal_1", "type": "goal", "title": "Process complete" }
+  ],
+  "connections": [
+    { "from": "step_1", "to": "gate_1" },
+    { "from": "gate_1", "to": "tool_1" },
+    { "from": "tool_1", "to": "goal_1" }
+  ]
 }
 ```
 
-Expected response:
-```json
-{ "data": ["Model output"] }
-```
+This JSON can be read by any LLM that can reason on structured data.
 
 ---
 
-## 📦 Tech Stack
+## Try It Live
 
-- 🧱 No frameworks
-- 💻 HTML + vanilla JavaScript
-- 🎯 SVG for live flow rendering
-- 🚀 GitHub Pages-ready
+The demo is hosted on GitHub Pages:
 
----
-
-## 🧪 Try It Live
-
-Open the live demo here:  
-👉 `https://chkrvrtnai.github.io/fluxi-ai/`
-
-Or clone and launch `index.html` in any modern browser.
+**https://chkrvrtnai.github.io/fluxi-ai/**
 
 ---
 
-## ⚠️ Note
+## What Comes Next
 
-This is a **demo version** focused on rapid prototyping and education.  
-For production usage, see the full [Fluxi project](https://github.com/your-org/fluxi).
+This prototype validated the visual editor concept. The full Fluxi platform extends this with:
+
+- **Knowledge graph** — blueprints become interconnected, queryable knowledge
+- **Execution engine** — blueprints run, not just sit as diagrams
+- **Version control** — track changes, compare versions, approve workflows
+- **Process intelligence** — analyze where reasoning breaks, optimize, evolve
+- **Governance** — audit trails, compliance, role-based access
+
+See the [main branch](https://github.com/CHKRvrtnAI/fluxi-ai) for the full product vision.
 
 ---
 
-## 👀 License
+## License
 
-MIT License — free to use, remix, or fork.
-
-> **From flowchart to semantic plan. From plan to AI behavior.**
-> Fluxi makes it visible.
+MIT
