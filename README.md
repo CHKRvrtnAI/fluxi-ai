@@ -119,7 +119,34 @@ The future isn't replacing people with machines. It's understanding what people 
 
 ## Status
 
-Early development. Architecture designed. Building now.
+v0.1 — Blueprint editor. Visual drag-drop canvas for creating process blueprints.
+
+**What works:**
+- Node types: Start, Step, Gate, Finish, Next Process
+- Editable attributes: actor, tool, goal per step
+- Configurable incoming/outgoing links per node
+- Direction rules enforced (Start has no in, Finish links only to Next Process)
+- Delete nodes and edges
+- FastAPI backend with blueprint CRUD
+- Docker Compose for infrastructure
+
+---
+
+## Quick Start
+
+```bash
+# Backend
+cd backend
+pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
+
+# Frontend
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:5173
 
 ---
 
